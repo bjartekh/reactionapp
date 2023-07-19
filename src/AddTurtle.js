@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function AddTurtle() {
+export default function AddTurtle({isActive}) {
     const [data, setData] = useState('');
     const [isCreated, setIsCreated] = useState(false)
     const [isLoading, setIsLoading] = useState(false);
@@ -15,6 +15,13 @@ export default function AddTurtle() {
         console.log("Saved input:" + key + ":" + event.target.value);
     };
 
+    useEffect(() => {
+
+        setIsCreated(false)
+      
+    }, [isActive]);
+
+    
     const addTurtle = async (event) => {
         console.log("Click. Data=" + data);
         try {

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function GetTurtles() {
+export default function GetTurtles({isActive}) {
     const [data, setData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [err, setErr] = useState('');
@@ -34,9 +34,53 @@ export default function GetTurtles() {
         }
     };
 
+
+    useEffect(() => {
+
+        let hostname = process.env.REACT_APP_API_URL;
+        async function fetchData() {
+            try {
+                console.log("Running fetch for GetTurtles..");
+                const response = await fetch(hostname+'?operation=List', {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                let arr = [];
+                for (var i=0;i<result.length; i++) {
+                    arr.push({name : result[i].name.S});
+                }
+                setData(arr);
+
+            } catch (err) {
+                console.log(err);
+            } finally {
+            }
+        };
+        if(isActive) {
+            console.log("isActiveDetected")
+            setIsLoading(true)
+            fetchData();
+        } else {
+            console.log("DoneLoading...")
+        }
+        setIsLoading(false);
+        return () => {
+            setIsLoading(false);
+          };
+      
+    }, [isActive]);
+
     return (
         <>
-        <button className="btn btn-success" onClick={handleClick}>Get Turtles</button>
         <div className="row">
             {isLoading && <div className="spinner-border" role="status">
                 <span className="visually-hidden">Loading...</span>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export default function DeleteTurtle() {
+export default function DeleteTurtle({ isActive }) {
     const [data, setData] = useState([]);
     const [selectedTurtle, setSelectedTurtle] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -13,7 +13,7 @@ export default function DeleteTurtle() {
         console.log(event);
         var key = event.target.name;
         setSelectedTurtle(event.target.value);
-        console.log("Saved input:"+event.target.value);
+        console.log("Saved input:" + event.target.value);
     };
 
     const handleRefresh = async (event) => {
@@ -25,8 +25,8 @@ export default function DeleteTurtle() {
     const handleDelete = async (event) => {
         console.log("HandleDelete");
         try {
-            console.log("Running delete of"+selectedTurtle);
-            const response = await fetch(hostname+'?operation=Delete&value='+selectedTurtle, {
+            console.log("Running delete of" + selectedTurtle);
+            const response = await fetch(hostname + '?operation=Delete&value=' + selectedTurtle, {
                 method: 'GET',
                 headers: {
                     Accept: 'application/json',
@@ -42,7 +42,7 @@ export default function DeleteTurtle() {
             console.log(err);
             //   setErr(err.message);
         } finally {
-                setDoneLoading(false);
+            setDoneLoading(false);
         }
 
     }
@@ -52,7 +52,7 @@ export default function DeleteTurtle() {
         async function fetchData() {
             try {
                 console.log("Running fetch for DeleteTurtle..");
-                const response = await fetch(hostname+'?operation=List', {
+                const response = await fetch(hostname + '?operation=List', {
                     method: 'GET',
                     headers: {
                         Accept: 'application/json',
@@ -64,16 +64,22 @@ export default function DeleteTurtle() {
                 }
 
                 const result = await response.json();
-
-                setData(result);
+                let arr = [];
+                for (var i=0;i<result.length; i++) {
+                    arr.push({name : result[i].name.S});
+                }
+                setData(arr);
             } catch (err) {
                 console.log(err);
-                //   setErr(err.message);
             } finally {
-                //    setIsLoading(false);
             }
         };
-        if(!doneLoading) {
+        if (isActive) {
+            console.log("isActiveDetected")
+            setSelectedTurtle('');
+            fetchData();
+        }
+        else if (!doneLoading) {
             console.log("Not Done Loading")
             fetchData();
         } else {
@@ -82,26 +88,31 @@ export default function DeleteTurtle() {
         }
         return () => {
             setDoneLoading(true);
-          };
-      
-    }, [data, isLoading, doneLoading]);
+        };
+
+    }, [isLoading, doneLoading, isActive, hostname]);
 
     return (
         <>
-        <button type="button" className="btn btn-info" onClick={handleRefresh}><i className="bi bi-lightning"></i>Refresh</button>
-        {selectedTurtle && selectedTurtle.length>0 && <button type="button" className="btn btn-danger" onClick={handleDelete}><i className="bi bi-database-fill-x"></i>Delete {selectedTurtle}</button>}
-        <div className="row">
-            {isLoading && <div className="spinner-border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </div>}
-          
-            <div className="list-group">
-                {data.map((p) => (
-                    <button key={p.name} className="list-group-item list-group-item-action" onClick={saveSelected} value={p.name}>{p.name}</button>
-                ))
+            <div className="alert alert-info" role="alert">
+                Select Turtle to Delete it...
+            </div>
+            <div className="p-3">
+                {selectedTurtle && selectedTurtle.length > 0 && <button type="button" className="btn btn-danger" onClick={handleDelete}><i className="bi bi-database-fill-x"></i>Delete {selectedTurtle}</button>
                 }
             </div>
-        </div>
-        </>        
+            <div className="row">
+                {isLoading && <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>}
+
+                <div className="list-group">
+                    {data.map((p) => (
+                        <button key={p.name} className="list-group-item list-group-item-action" onClick={saveSelected} value={p.name}>{p.name}</button>
+                    ))
+                    }
+                </div>
+            </div>
+        </>
     );
 }
